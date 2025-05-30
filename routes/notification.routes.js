@@ -1,18 +1,23 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const notificationController = require('../controllers/notification.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification
+} from '../controllers/notification.controller.js';
+import authMiddleware from '../middleware/auth.middleware.js';
 
 // Get all notifications
-router.get('/', authMiddleware, notificationController.getNotifications);
+router.get('/', authMiddleware, getNotifications);
 
 // Mark notification as read
-router.put('/:id/read', authMiddleware, notificationController.markNotificationAsRead);
+router.put('/:id/read', authMiddleware, markNotificationAsRead);
 
 // Mark all notifications as read
-router.put('/read-all', authMiddleware, notificationController.markAllNotificationsAsRead);
+router.put('/read-all', authMiddleware, markAllNotificationsAsRead);
 
 // Delete notification
-router.delete('/:id', authMiddleware, notificationController.deleteNotification);
+router.delete('/:id', authMiddleware, deleteNotification);
 
-module.exports = router;
+export default router;

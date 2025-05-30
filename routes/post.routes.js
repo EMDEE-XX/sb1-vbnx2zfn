@@ -1,39 +1,51 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const postController = require('../controllers/post.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+import {
+  createPost,
+  getFeed,
+  getPostById,
+  updatePost,
+  deletePost,
+  likePost,
+  unlikePost,
+  getPostLikes,
+  commentOnPost,
+  getPostComments,
+  searchPosts
+} from '../controllers/post.controller.js';
+import authMiddleware from '../middleware/auth.middleware.js';
 
 // Create post
-router.post('/', authMiddleware, postController.createPost);
+router.post('/', authMiddleware, createPost);
 
 // Get all posts (feed)
-router.get('/', authMiddleware, postController.getFeed);
+router.get('/', authMiddleware, getFeed);
 
 // Get post by id
-router.get('/:id', authMiddleware, postController.getPostById);
+router.get('/:id', authMiddleware, getPostById);
 
 // Update post
-router.put('/:id', authMiddleware, postController.updatePost);
+router.put('/:id', authMiddleware, updatePost);
 
 // Delete post
-router.delete('/:id', authMiddleware, postController.deletePost);
+router.delete('/:id', authMiddleware, deletePost);
 
 // Like post
-router.post('/:id/like', authMiddleware, postController.likePost);
+router.post('/:id/like', authMiddleware, likePost);
 
 // Unlike post
-router.post('/:id/unlike', authMiddleware, postController.unlikePost);
+router.post('/:id/unlike', authMiddleware, unlikePost);
 
 // Get post likes
-router.get('/:id/likes', authMiddleware, postController.getPostLikes);
+router.get('/:id/likes', authMiddleware, getPostLikes);
 
 // Comment on post
-router.post('/:id/comment', authMiddleware, postController.commentOnPost);
+router.post('/:id/comment', authMiddleware, commentOnPost);
 
 // Get post comments
-router.get('/:id/comments', authMiddleware, postController.getPostComments);
+router.get('/:id/comments', authMiddleware, getPostComments);
 
 // Search posts
-router.get('/search/query', authMiddleware, postController.searchPosts);
+router.get('/search/query', authMiddleware, searchPosts);
 
-module.exports = router;
+export default router;

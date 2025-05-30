@@ -1,30 +1,39 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const userController = require('../controllers/user.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+import {
+  getUserProfile,
+  updateUserProfile,
+  uploadProfilePicture,
+  followUser,
+  unfollowUser,
+  getUserFollowers,
+  getUserFollowing,
+  searchUsers
+} from '../controllers/user.controller.js';
+import authMiddleware from '../middleware/auth.middleware.js';
 
 // Get user profile
-router.get('/profile/:id', authMiddleware, userController.getUserProfile);
+router.get('/profile/:id', authMiddleware, getUserProfile);
 
 // Update user profile
-router.put('/profile', authMiddleware, userController.updateUserProfile);
+router.put('/profile', authMiddleware, updateUserProfile);
 
 // Upload profile picture
-router.post('/profile-picture', authMiddleware, userController.uploadProfilePicture);
+router.post('/profile-picture', authMiddleware, uploadProfilePicture);
 
 // Follow user
-router.post('/follow/:id', authMiddleware, userController.followUser);
+router.post('/follow/:id', authMiddleware, followUser);
 
 // Unfollow user
-router.post('/unfollow/:id', authMiddleware, userController.unfollowUser);
+router.post('/unfollow/:id', authMiddleware, unfollowUser);
 
 // Get user followers
-router.get('/followers/:id', authMiddleware, userController.getUserFollowers);
+router.get('/followers/:id', authMiddleware, getUserFollowers);
 
 // Get user following
-router.get('/following/:id', authMiddleware, userController.getUserFollowing);
+router.get('/following/:id', authMiddleware, getUserFollowing);
 
 // Search users
-router.get('/search', authMiddleware, userController.searchUsers);
+router.get('/search', authMiddleware, searchUsers);
 
-module.exports = router;
+export default router;

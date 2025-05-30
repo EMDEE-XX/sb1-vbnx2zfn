@@ -1,21 +1,27 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const messageController = require('../controllers/message.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+import {
+  getConversations,
+  getConversationMessages,
+  sendMessage,
+  markMessageAsRead,
+  deleteMessage
+} from '../controllers/message.controller.js';
+import authMiddleware from '../middleware/auth.middleware.js';
 
 // Get conversations
-router.get('/conversations', authMiddleware, messageController.getConversations);
+router.get('/conversations', authMiddleware, getConversations);
 
 // Get conversation messages
-router.get('/conversations/:id', authMiddleware, messageController.getConversationMessages);
+router.get('/conversations/:id', authMiddleware, getConversationMessages);
 
 // Send message
-router.post('/send', authMiddleware, messageController.sendMessage);
+router.post('/send', authMiddleware, sendMessage);
 
 // Mark message as read
-router.put('/:id/read', authMiddleware, messageController.markMessageAsRead);
+router.put('/:id/read', authMiddleware, markMessageAsRead);
 
 // Delete message
-router.delete('/:id', authMiddleware, messageController.deleteMessage);
+router.delete('/:id', authMiddleware, deleteMessage);
 
-module.exports = router;
+export default router;
