@@ -1,9 +1,14 @@
+import { Server } from 'socket.io';
+
 /**
  * Socket.io implementation for real-time features
  */
-module.exports = (io) => {
+const initializeSocket = (io) => {
   // Store online users
   const onlineUsers = new Map();
+
+  // Store active typing users
+  const typingUsers = new Map();
 
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
@@ -29,7 +34,7 @@ module.exports = (io) => {
       }
     });
 
-    // Handle private messages
+    // Handle private messages with read receipts
     socket.on('message:send', async (data) => {
       const { recipientId, content } = data;
       const senderId = socket.userId;
@@ -39,7 +44,6 @@ module.exports = (io) => {
       }
       
       try {
-        // Generate message object
         const message = {
           id: Date.now().toString(),
           senderId,
@@ -55,7 +59,7 @@ module.exports = (io) => {
           io.to(recipientSocketId).emit('message:new', message);
         }
         
-        // Always send back to sender for confirmation
+        // Send back to sender for confirmation
         socket.emit('message:sent', message);
         
       } catch (error) {
@@ -64,64 +68,100 @@ module.exports = (io) => {
       }
     });
 
-    // Handle typing indicator
+    // Handle message read receipts
+    socket.on('message:read', (messageId) => {
+      const userId = socket.userId;
+      if (!userId || !messageId) return;
+
+      // Notify message sender that the message was read
+      socket.broadcast.emit('message:read', { messageId, readBy: userId });
+    });
+
+    // Handle typing indicator with debounce
     socket.on('typing:start', (data) => {
       const { recipientId } = data;
       const senderId = socket.userId;
       
       if (!senderId || !recipientId) return;
       
+      // Clear existing timeout
+      if (typingUsers.has(senderId)) {
+        clearTimeout(typingUsers.get(senderId));
+      }
+      
+      // Set new timeout
+      const timeout = setTimeout(() => {
+        const recipientSocketId = onlineUsers.get(recipientId);
+        if (recipientSocketId) {
+          io.to(recipientSocketId).emit('user:stopped-typing', { userId: senderId });
+        }
+        typingUsers.delete(senderId);
+      }, 3000);
+      
+      typingUsers.set(senderId, timeout);
+      
+      // Send typing indicator
       const recipientSocketId = onlineUsers.get(recipientId);
       if (recipientSocketId) {
         io.to(recipientSocketId).emit('user:typing', { userId: senderId });
       }
     });
 
-    // Handle stopped typing
-    socket.on('typing:stop', (data) => {
-      const { recipientId } = data;
-      const senderId = socket.userId;
-      
-      if (!senderId || !recipientId) return;
-      
-      const recipientSocketId = onlineUsers.get(recipientId);
-      if (recipientSocketId) {
-        io.to(recipientSocketId).emit('user:stopped-typing', { userId: senderId });
+    // Handle notifications with real-time updates
+    socket.on('notification:read', (notificationId) => {
+      if (socket.userId) {
+        // Broadcast read status to other user sessions
+        socket.to(`user:${socket.userId}`).emit('notification:marked-read', notificationId);
       }
     });
 
-    // Handle notifications
-    socket.on('notification:read', (notificationId) => {
-      // This would be handled by the notification controller,
-      // but we can broadcast the read status to other user sessions
+    // Handle user presence
+    socket.on('presence:update', (status) => {
       if (socket.userId) {
-        socket.to(`user:${socket.userId}`).emit('notification:marked-read', notificationId);
+        socket.broadcast.emit('user:presence', {
+          userId: socket.userId,
+          status,
+          lastSeen: new Date()
+        });
       }
     });
 
     // Handle disconnect
     socket.on('disconnect', () => {
       if (socket.userId) {
+        // Clear typing timeout
+        if (typingUsers.has(socket.userId)) {
+          clearTimeout(typingUsers.get(socket.userId));
+          typingUsers.delete(socket.userId);
+        }
+        
         // Remove from online users
         onlineUsers.delete(socket.userId);
         
-        // Broadcast user's offline status
-        socket.broadcast.emit('user:status', { userId: socket.userId, status: 'offline' });
+        // Broadcast offline status with last seen
+        socket.broadcast.emit('user:status', {
+          userId: socket.userId,
+          status: 'offline',
+          lastSeen: new Date()
+        });
         
         console.log(`User disconnected: ${socket.userId}`);
       }
     });
   });
 
-  // Function to send notification to a specific user
+  // Helper functions for external use
   io.sendNotification = (userId, notification) => {
     io.to(`user:${userId}`).emit('notification:new', notification);
   };
 
-  // Function to broadcast to all connected clients
   io.broadcastAnnouncement = (message) => {
     io.emit('announcement', { message, timestamp: new Date() });
   };
 
   return io;
 };
+
+export default initializeSocket;
+
+export default initializeSocket
