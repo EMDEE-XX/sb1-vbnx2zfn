@@ -163,5 +163,3 @@ const initializeSocket = (io) => {
 };
 
 export default initializeSocket;
-
-export default initializeSocket
