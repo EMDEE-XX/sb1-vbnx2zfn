@@ -1,14 +1,16 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const supabase = require('../config/supabase');
-const { v4: uuidv4 } = require('uuid');
-require('dotenv').config();
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
+import supabase from '../config/supabase.js';
+import { config } from 'dotenv';
+
+config();
 
 /**
  * Register a new user
  * @route POST /api/auth/register
  */
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { username, email, password, fullName } = req.body;
 
@@ -105,7 +107,7 @@ exports.register = async (req, res) => {
  * Login user
  * @route POST /api/auth/login
  */
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -176,7 +178,7 @@ exports.login = async (req, res) => {
  * Get current user
  * @route GET /api/auth/me
  */
-exports.getCurrentUser = async (req, res) => {
+export const getCurrentUser = async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -218,7 +220,7 @@ exports.getCurrentUser = async (req, res) => {
  * Update password
  * @route PUT /api/auth/password
  */
-exports.updatePassword = async (req, res) => {
+export const updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.id;
@@ -299,7 +301,7 @@ exports.updatePassword = async (req, res) => {
  * Logout user
  * @route POST /api/auth/logout
  */
-exports.logout = async (req, res) => {
+export const logout = async (req, res) => {
   try {
     const { error } = await supabase.auth.signOut();
 

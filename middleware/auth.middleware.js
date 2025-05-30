@@ -1,5 +1,7 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+import jwt from 'jsonwebtoken';
+import { config } from 'dotenv';
+
+config();
 
 /**
  * Middleware to authenticate user requests
@@ -33,4 +35,4 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+export default authMiddleware;
